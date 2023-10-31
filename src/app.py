@@ -46,7 +46,9 @@ class GeoAPI:
 class RestaurantAPI(MethodView):
     @staticmethod
     def get():
-        # Get the request json data
+        if request.method != 'GET':
+            return jsonify(Errors.errors.get("invalid_http_method")), 405
+
         address_json = request.get_json()
 
         if not RestaurantAPI.validate_address(address_json):
@@ -56,7 +58,7 @@ class RestaurantAPI(MethodView):
                           address_json['postal_code'], address_json['country'])
 
         geo_api = GeoAPI(Constants.GEO_API_URL, Secrets.GEO_API_KEY, address)
-        response = geo_api.make_query()
+        response = geo_api.make_query_address()
 
         if response.status_code != 200:
             return jsonify(Errors.errors.get("latitude/longitude")), 400
